@@ -147,7 +147,7 @@ def get_if_raw_hwaddr(ifname):
     if len(mac) != 6:
         raise Scapy_Exception("No MAC address found on %s !" % ifname)
 
-    return (ARPHDR_ETHER, struct.pack("!HHHHHH", *mac))
+    return (ARPHDR_ETHER, struct.pack("!BBBBBB", *mac))
 
 
 # BPF specific functions
@@ -251,7 +251,9 @@ class BPFInterfaceProvider(InterfaceProvider):
         ips = in6_getifaddr()
         for ifname, index in _get_ifindex_list():
             try:
-                ifflags_int = _get_if_flags(ifname) or 0
+                ifflags_int = _get_if_flags(ifname)
+                if ifflags_int is None:
+                    continue
                 mac = scapy.utils.str2mac(get_if_raw_hwaddr(ifname)[1])
                 ip = inet_ntop(socket.AF_INET, get_if_raw_addr(ifname))
             except Scapy_Exception:
